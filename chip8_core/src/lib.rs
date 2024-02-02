@@ -104,7 +104,7 @@ impl Emu {
                 let nnn = op & 0xFFF;
                 self.push(self.pc);
                 self.pc = nnn;
-            }
+            },
             //3XNN
             (3,_,_,_) => {
                 let x = digit2 as usize;
@@ -112,7 +112,7 @@ impl Emu {
                 if self.v_reg[x] == nn {
                     self.pc += 2;
                 }
-            }
+            },
             //4XNN
             (4,_,_,_) => {
                 let x = digit2 as usize;
@@ -120,7 +120,7 @@ impl Emu {
                 if self.v_reg[x] != nn {
                     self.pc += 2;
                 }
-            }
+            },
             //5XYO
             (5,_,_,0) => {
                 let x = digit2 as usize;
@@ -128,49 +128,48 @@ impl Emu {
                 if self.v_reg[x] == self.v_reg[y] {
                     self.pc += 2;
                 }
-            }
+            },
             //6XNN
             (6,_,_,_) => {
                 let x = digit2 as usize;
                 let nn = (op & 0xFF) as u8;
                 self.v_reg[x] = nn;
-            }
+            },
 
             //7XNN
             (7, _, _, _) => {
                 let x = digit2 as usize;
                 let nn = (op & 0xFF) as u8;
                 self.v_reg[x] = self.v_reg[x].wrapping_add(nn);
-            }
+            },
 
             (_,_,_,_) => {
                 unimplemented!("Unimplemented opcode: {}", op);
-            }
-
+            },
             //8XYO
             (8,_,_,0) => {
                 let x = digit2 as usize;
                 let y = digit3 as uszie;
                 self.v_reg[x] = self.v_reg[y];
-            }
+            },
             //8XY1
             (8,_,_,1) => {
                 let x = digit2 as usize;
                 let y = digit3 as usize;
                 self.v_reg[x] |= self.v_reg[y];
-            }
+            },
             //8XY2
             (8,_,_,2) => {
                 let x = digit2 as usize;
                 let y = digit3 as usize;
                 self.v_reg[x] &= self.v_reg[y];
-            }
+            },
             //8XY3
             (8,_,_,3) => {
                 let x = digit2 as usize;
                 let y = digit3 as usize;
                 self.v_reg[x] ^= self.v_reg[y];
-            }
+            },
             //8XY4
             (8,_,_,4) => {
                 let x = digit2 as usize;
@@ -181,7 +180,52 @@ impl Emu {
 
                 self.v_reg[x] = new_vx;
                 self.v_reg[NUM_REGS - 1] = new_vf;
-            }
+            },
+            //8XY5
+            (8,_,_,5) => {
+                let x = digit2 as usize;
+                let y = digit3 as usize;
+
+                let (new_vx, borrow) = self.v_reg[x].overflowing_sub(self.v_reg[y]);
+                let new_vf = if borrow { 0 } else { 1 };
+
+                self.v_reg[x] = new_vx;
+                self.v_reg[0xF] = new_vf;
+            },
+            (8,_,_,6) => {
+                let x = digit2 as usize;
+                let lsb = self.v_reg[x] & 1;
+                self.v_reg[x] >>= 1;
+                self.v_reg[NUM_REGS - 1] = lsb;
+            },
+            (8,_,_,7) => {
+                let x = digit2 as usize;
+                let y = digit3 as usize;
+
+                let (new_vx, borrow) = self.v_reg[y].overflowing_sub(self.v_reg[x]);
+                let new_vf = if borrow {0} else {1};
+
+                self.v_reg[x] = new_vx;
+                self.v_reg[NUM_REGS - 1] = new_vf;
+
+            },
+            (8,_,_, 0xE) => {
+                let x = digit2 as usize;
+                let msb = (self.v_reg[x] >> 7) & 1;
+                self.v_reg[x] <<= 1;
+                self.v_reg[NUM_REGS - 1] = msb;
+            },
+            (9,_,_,0) => {
+                let x = digit2 as usize;
+                let y = digit3 as usize;
+                if self.v_reg[x] != self.v_reg[y] {
+                    self.pc += 2;
+                }
+            },
+            (0xA,_,_,_) => {
+                let nnn = op & 0xFFF;
+                self.i_reg = nnn;
+            },
         }
     }
     
