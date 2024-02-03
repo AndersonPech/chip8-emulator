@@ -1,3 +1,5 @@
+use rand::random;
+
 const FONTSET_SIZE: usize = 80;
 
 const FONTSET: [u8; FONTSET_SIZE] = [
@@ -226,6 +228,58 @@ impl Emu {
                 let nnn = op & 0xFFF;
                 self.i_reg = nnn;
             },
+            //BNNN
+            // Move PC to the sum of the value in V0 and raw value 0xNNN
+            (0xB, _, _, _) => {
+                let nnn = op & 0xFFF;
+                self.pc = (self.v_reg[0] as u16) + nnn;
+            },
+            //CXNN
+            //Random number is AND with lower 8 bits of opcode
+            (0xC, _, _, _) => {
+                let x = digit2 as usize;
+                let nn = (op & 0xFF) as u8;
+                let rng: u8 = random();
+                self.v_reg[digit2] = nn & rng;
+            }
+            //Draw
+            //DXYN
+            (0xD,_,_,_) => {
+                //Get the (x, y) coords for our sprites
+                let x_coord = self.v_reg[digit2 as usize] as u16;
+                let y_coord = self.v_reg[digit3 as usize] as u16;
+                //The last digit determines how many rows high the sprite is
+                let num_rows = digit4;
+                // Keep track if any pixels flipped
+                // If any pixel flipped then change VF
+                let mut flipped = false;
+                // Iterate through each row of sprite
+                for y in 0..num_rows {
+                    // Determine which memory adddress our row's data is stored
+                    let addr = self.i_reg + y as u16;
+                    let pixels = self.ram[addr as usize];
+                    //Iterate over each column in row
+                    for x in 0..8 {
+                        if (pixels & (0b1000_0000 >> x)) != 0 {
+                            let x = (x_coord + x) as usize % SCREEN_WIDTH;
+                            let y = (y_coord + y) as usize % SCREEN_HEIGHT;
+
+                            //Get our pixel index for our 1D screen array
+                            let idx = x + SCREEN_WIDTH * y;
+                            //Check if screen is about to flip
+                            flipped |= self.screen[idx];
+                            self.screen[idx] ^= true;
+                        }
+                    }
+                } 
+                if flipped {
+                    self.v_reg[NUM_REGS - 1] = 1;
+                } else {
+                    self.v_reg[NUM_REGS - 1] = 0;
+                } 
+            }
+
+
         }
     }
     
