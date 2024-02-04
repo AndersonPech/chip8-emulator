@@ -288,7 +288,20 @@ impl Emu {
                     self.pc += 2;
                 }
             },
-            
+            //EXA1- Skip when key not pressed
+            (0xE,_,0xA, 1) => {
+                let x = digit2 as usize;
+                let vx = self.v_reg[x];
+                let key = self.keys[vx as usize];
+                if !key {
+                    self.pc += 2;
+                }
+            }
+            //FX07 - Stores delay timer 
+            (0xF, _, _0, 7) => {
+                let x = digit2 as usize;
+                self.v_reg[x] = self.dt;
+            }
 
 
         }
