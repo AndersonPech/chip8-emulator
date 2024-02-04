@@ -279,6 +279,17 @@ impl Emu {
                 } 
             }
 
+            //EX9E- Skip when key pressed User input
+            (0xE,_,9,0xE) => {
+                let x = digit2 as usize;
+                let vx = self.v_reg[x];
+                let key = self.keys[vx as usize];
+                if key {
+                    self.pc += 2;
+                }
+            },
+            
+
 
         }
     }
