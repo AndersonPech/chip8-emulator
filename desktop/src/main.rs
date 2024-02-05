@@ -11,4 +11,7 @@ fn main() {
         println!("Usage: cargo run path/to/game");
         return;
     }
+
+    //SDL setup
+    let sdl_contest = sdl2::init().unwrap();
 }
