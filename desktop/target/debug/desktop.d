@@ -1,0 +1,1 @@
+/Users/andersonpech/Desktop/Rust/chip8Emulator/chip8/desktop/target/debug/desktop: /Users/andersonpech/Desktop/Rust/chip8Emulator/chip8/chip8_core/src/lib.rs /Users/andersonpech/Desktop/Rust/chip8Emulator/chip8/desktop/src/main.rs

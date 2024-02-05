@@ -83,7 +83,7 @@ impl Emu {
         let digit1 = (op & 0xF000) >> 12;
         let digit2 = (op & 0x0F00) >> 8;
         let digit3 = (op & 0x00F0) >> 4;
-        let digit4 = (op & 0x000F);
+        let digit4 = op & 0x000F;
 
         match (digit1, digit2, digit3, digit4) {
             (0,0,0,0) => return,
@@ -126,7 +126,7 @@ impl Emu {
             //5XYO
             (5,_,_,0) => {
                 let x = digit2 as usize;
-                let y = digit3;
+                let y = digit3 as usize;
                 if self.v_reg[x] == self.v_reg[y] {
                     self.pc += 2;
                 }
@@ -151,7 +151,7 @@ impl Emu {
             //8XYO
             (8,_,_,0) => {
                 let x = digit2 as usize;
-                let y = digit3 as uszie;
+                let y = digit3 as usize;
                 self.v_reg[x] = self.v_reg[y];
             },
             //8XY1
@@ -180,7 +180,7 @@ impl Emu {
                 let (new_vs, carry) = self.v_reg[x].overflowing_add(self.v_reg[y]);
                 let new_vf = if carry {1} else {0};
 
-                self.v_reg[x] = new_vx;
+                self.v_reg[x] = new_vs;
                 self.v_reg[NUM_REGS - 1] = new_vf;
             },
             //8XY5
@@ -240,7 +240,7 @@ impl Emu {
                 let x = digit2 as usize;
                 let nn = (op & 0xFF) as u8;
                 let rng: u8 = random();
-                self.v_reg[digit2] = nn & rng;
+                self.v_reg[x] = nn & rng;
             }
             //Draw
             //DXYN
@@ -347,7 +347,7 @@ impl Emu {
                 //Fetch the hundred digit 
                 let hundreds = (vx / 100.0).floor() as u8;
                 let tens = ((vx /10.0) % 10.0).floor() as u8;
-                let ones = (vx % 10) as u8;
+                let ones = (vx % 10.0) as u8;
 
                 self.ram[self.i_reg as usize] = hundreds;
                 self.ram[(self.i_reg + 1) as usize] = tens;
@@ -392,6 +392,23 @@ impl Emu {
             }
             self.st -= 1;
         }
+    }
+
+    //Pass a pointer to frontend to screen
+    pub fn get_display(&self) -> &[bool] {
+        &self.screen
+    }
+
+    //Frontend handles keys, this function sets it in backend
+    pub fn keypress(&mut self, idx: usize, pressed: bool) {
+        self.keys[idx] = pressed;
+    }
+
+    //Load game code into ram
+    pub fn load(&mut self, data: &[u8]) {
+        let start = START_ADDR as usize;
+        let end = (START_ADDR as usize) + data.len();
+        self.ram[start..end].copy_from_slice(data);
     }
  
     
