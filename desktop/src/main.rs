@@ -19,6 +19,9 @@ const WINDOW_HEIGHT: u32 = (SCREEN_HEIGHT as u32) * SCALE;
 
 const TICKS_PER_FRAME: usize = 10;
 
+//TODO: SCREEN NOT CLEARING
+//TODO: not implemented: Unimplemented opcode: 61737
+
 fn main() {
     let args: Vec<_> = env::args().collect();
 
