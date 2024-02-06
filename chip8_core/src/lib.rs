@@ -145,9 +145,6 @@ impl Emu {
                 self.v_reg[x] = self.v_reg[x].wrapping_add(nn);
             },
 
-            (_,_,_,_) => {
-                unimplemented!("Unimplemented opcode: {}", op);
-            },
             //8XYO
             (8,_,_,0) => {
                 let x = digit2 as usize;
@@ -277,7 +274,7 @@ impl Emu {
                 } else {
                     self.v_reg[NUM_REGS - 1] = 0;
                 } 
-            }
+            },
 
             //EX9E- Skip when key pressed User input
             (0xE,_,9,0xE) => {
@@ -362,14 +359,16 @@ impl Emu {
                 }
             },
             //FX65
-            (0xF,_,6,5) => {
+            (0xF,_, 6 ,5) => {
                 let x = digit2 as usize;
                 let i = self.i_reg as usize;
                 for idx in 0..=x {
                     self.v_reg[idx] = self.ram[i + idx];
                 }
+            },
+            (_,_,_,_) => {
+                unimplemented!("Unimplemented opcode: {}", op);
             }
-
         }
     }
     
